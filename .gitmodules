@@ -1,0 +1,3 @@
+[submodule "ext/src/libjpeg-turbo"]
+	path = ext/src/libjpeg-turbo
+	url = https://github.com/QuarkTheAwesome/libjpeg-turbo

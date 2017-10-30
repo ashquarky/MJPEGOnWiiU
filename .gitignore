@@ -1,1 +1,5 @@
 build/
+ext/bin
+ext/include
+ext/lib
+ext/share
