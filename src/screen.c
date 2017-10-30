@@ -6,6 +6,7 @@
 #include <coreinit/screen.h>
 #include <coreinit/thread.h>
 #include <coreinit/time.h>
+#include <coreinit/cache.h>
 #include <coreinit/systeminfo.h>
 #include <gx2/state.h>
 #include <gx2/event.h>
@@ -37,11 +38,13 @@ void ScreenFlip() {
         DCFlushRange(workBuf.image, workBuf.size);
         OSScreenFlipBuffersEx(id);
     }
-    currentBuffer != currentBuffer;
+    currentBuffer = !currentBuffer;
 }
 
 void ScreenInit() {
-    //GX2Init(NULL);
+/*  Comment out this line for Decaf */
+    GX2Init(NULL);
+
     OSScreenInit();
     size_t tvBufSz = OSScreenGetBufferSizeEx(SCREEN_TV);
     size_t drcBufSz = OSScreenGetBufferSizeEx(SCREEN_DRC);
@@ -72,11 +75,14 @@ void ScreenInit() {
 }
 
 void ScreenShutdown() {
-    OSScreenEnableEx(SCREEN_TV, false);
-    OSScreenEnableEx(SCREEN_DRC, false);
+    /*OSScreenEnableEx(SCREEN_TV, false);
+    OSScreenEnableEx(SCREEN_DRC, false);*/
 
     free(buffers[SCREEN_TV][0].image);
     free(buffers[SCREEN_DRC][0].image);
+
+/*  Comment out for Decaf */
+    GX2Shutdown();
 }
 
 /*  Waits for vsync; which happens every 1/60s.

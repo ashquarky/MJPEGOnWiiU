@@ -5,6 +5,7 @@ then
 else
     cd ext/src/libjpeg-turbo
     autoreconf --install
+#   TODO: see if we can get away with enabling SIMD
     ./configure --host=powerpc-eabi --prefix=$(dirname $(dirname $(pwd))) --disable-shared --without-simd CFLAGS=-mwup
     make $@
     make install

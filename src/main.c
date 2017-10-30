@@ -5,6 +5,7 @@
 #include <coreinit/foreground.h>
 #include <proc_ui/procui.h>
 #include <whb/log_cafe.h>
+#include <whb/log_udp.h>
 #include "common.h"
 #include "log.h"
 #include "app.h"
@@ -15,6 +16,7 @@ STATIC void InitApp() {
 }
 
 STATIC void ShutdownApp() {
+    AppCleanup();
     ScreenShutdown();
 }
 
@@ -41,6 +43,7 @@ STATIC void SaveCallback() {
 int main(int argc, char** argv) {
     ProcUIInit(&SaveCallback);
     WHBLogCafeInit();
+    WHBLogUdpInit();
     LOG("Hello World!\n");
 
     InitApp();
@@ -50,5 +53,8 @@ int main(int argc, char** argv) {
     ShutdownApp();
 
     WHBLogCafeDeinit();
+    WHBLogUdpDeinit();
     ProcUIShutdown();
+    _Exit(0);
+    return 0;
 }

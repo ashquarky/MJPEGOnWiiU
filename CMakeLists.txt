@@ -11,7 +11,8 @@ target_link_libraries(mediap
     nsysnet
     proc_ui
     gx2)
+include_directories(${CMAKE_SOURCE_DIR}/ext/include)
 target_link_libraries(mediap
-    ${CMAKE_SOURCE_DIR}/ext/lib/libjpeg.a)
+    ${CMAKE_SOURCE_DIR}/ext/lib/libturbojpeg.a)
 set_property(TARGET mediap PROPERTY C_STANDARD 99)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
