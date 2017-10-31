@@ -21,6 +21,8 @@ typedef struct _ScreenBuffer {
 void ScreenInit();
 void ScreenShutdown();
 void ScreenPutPixel(OSScreenID id, ScreenCoord coords, ScreenColour colour);
+void ScreenPushFramebuffer(OSScreenID id, unsigned int* fb, size_t fbSize);
+void ScreenFlip();
 
 void WaitForVysnc();
 

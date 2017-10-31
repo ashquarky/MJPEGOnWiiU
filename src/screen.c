@@ -10,9 +10,13 @@
 #include <coreinit/systeminfo.h>
 #include <gx2/state.h>
 #include <gx2/event.h>
+#include <dmae/dmae.h>
 #include "common.h"
 #include "log.h"
 #include "screen.h"
+
+/*  Uncomment for Decaf */
+//#define DECAF
 
 STATIC_VAR ScreenBuffer buffers[2][2] = {
     {
@@ -32,6 +36,16 @@ void ScreenPutPixel(OSScreenID id, ScreenCoord coords, ScreenColour colour) {
     workBuf.image[offset] = colour;
 }
 
+void ScreenPushFramebuffer(OSScreenID id, unsigned int* fb, size_t fbSize)  {
+    DCFlushRange(fb,fbSize);
+    ScreenBuffer workBuf = buffers[id][currentBuffer];
+    bool ret = DMAEWaitDone(DMAECopyMem(workBuf.image, fb, fbSize, 0));
+    if (!ret) {
+        LOG("DMAE Timeout!\n");
+    }
+    DCInvalidateRange(workBuf.image, workBuf.size);
+}
+
 void ScreenFlip() {
     for (int id = 0; id < 2; id++) {
         ScreenBuffer workBuf = buffers[id][currentBuffer];
@@ -42,14 +56,17 @@ void ScreenFlip() {
 }
 
 void ScreenInit() {
-/*  Comment out this line for Decaf */
+#ifndef DECAF
     GX2Init(NULL);
+#else
+    #warning Decaf build
+#endif
 
     OSScreenInit();
     size_t tvBufSz = OSScreenGetBufferSizeEx(SCREEN_TV);
     size_t drcBufSz = OSScreenGetBufferSizeEx(SCREEN_DRC);
 
-    void* tvBuf = malloc(tvBufSz);
+    void* tvBuf = memalign(0x100, tvBufSz);
     buffers[SCREEN_TV][0].image = tvBuf;
     buffers[SCREEN_TV][1].image = tvBuf + (tvBufSz / 2);
     buffers[SCREEN_TV][0].size = (tvBufSz / 2);
@@ -57,7 +74,7 @@ void ScreenInit() {
     LOGF("TV buffers: %08X@0x%08X; %08X@0x%08X\n", \
     tvBufSz / 2, tvBuf, tvBufSz / 2, tvBuf + (tvBufSz / 2));
 
-    void* drcBuf = malloc(drcBufSz);
+    void* drcBuf = memalign(0x100, drcBufSz);
     buffers[SCREEN_DRC][0].image = drcBuf;
     buffers[SCREEN_DRC][1].image = drcBuf + (drcBufSz / 2);
     buffers[SCREEN_DRC][0].size = (drcBufSz / 2);
@@ -71,7 +88,7 @@ void ScreenInit() {
     OSScreenEnableEx(SCREEN_TV, true);
     OSScreenEnableEx(SCREEN_DRC, true);
 
-    currentBuffer = 0;
+    currentBuffer = 1;
 }
 
 void ScreenShutdown() {
@@ -81,8 +98,9 @@ void ScreenShutdown() {
     free(buffers[SCREEN_TV][0].image);
     free(buffers[SCREEN_DRC][0].image);
 
-/*  Comment out for Decaf */
+#ifndef DECAF
     GX2Shutdown();
+#endif
 }
 
 /*  Waits for vsync; which happens every 1/60s.
